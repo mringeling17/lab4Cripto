@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  Intenta descifrar y mostrar mensajes ocultos en la página web usando Triple DES y CryptoJS
-// @author       Matias Ringeling
+// @author       TuNombre
 // @match        https://cripto.tiiny.site/
 // @grant        none
 // @require      https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js
@@ -34,19 +34,33 @@
         document.body.appendChild(p);
     }
 
-    // Extraer la clave de las letras mayúsculas del texto de la página
+    // Obtener la clave de las letras mayúsculas del texto de la página
     const textoDeLaPagina = document.body.innerText || document.body.textContent;
     const letrasMayusculas = textoDeLaPagina.match(/[A-Z]/g);
     const clave = letrasMayusculas.join('');
-    console.log('KEY:', clave);
+    console.log('La llave es:', clave);
 
-    // Obtener todos los divs con un ID y descifrar su contenido
-    const divsConID = Array.from(document.querySelectorAll('div[id]'));
-    console.log(`Los mensajes cifrados son: ${divsConID.length}`);
-    divsConID.forEach((div, index) => {
-        const idBase64 = div.id;
+    // Obtener los IDs de los divs que tienen clase con el formato M{i}
+    function obtenerIDsConClaseM() {
+        const IDsConClaseM = [];
+        for (let i = 1; ; i++) {
+            const div = document.querySelector(`.M${i}`);
+            if (!div) {
+                break; // Salir del bucle si no se encuentra el div con la clase M{i}
+            }
+            const id = div.id;
+            IDsConClaseM.push(id);
+        }
+        return IDsConClaseM;
+    }
+
+    const IDsConClaseM = obtenerIDsConClaseM();
+    console.log('Los mensajes cifrados son: ', IDsConClaseM.length);
+
+    // Descifrar y mostrar los mensajes cifrados
+    IDsConClaseM.forEach((idBase64, index) => {
         const mensajeDescifrado = descifrarMensaje(idBase64, clave);
-        console.log(idBase64, ' ', mensajeDescifrado);
+        console.log(` ${idBase64} ${mensajeDescifrado}`);
         if (mensajeDescifrado) {
             mostrarMensajeEnPagina(mensajeDescifrado);
         }
